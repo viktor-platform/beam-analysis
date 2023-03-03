@@ -1,4 +1,6 @@
 from io import StringIO
+from pathlib import Path
+
 from anastruct import SystemElements
 import pandas as pd
 
@@ -10,7 +12,8 @@ from viktor.parametrization import NumberField
 
 
 def get_profile_types(params, **kwargs):
-    df = pd.read_csv(f"steel-profiles-{params.input.profile_type}.csv", header=[2], skiprows=[3, 4, 5])
+    file_path = Path(__file__).parent / 'profiles'/f"steel-profiles-{params.input.profile_type}.csv"
+    df = pd.read_csv(file_path, header=[2], skiprows=[3, 4, 5])
     return df['Profile'].values.tolist()
 
 
@@ -204,12 +207,14 @@ class Controller(ViktorController):
 
     @staticmethod
     def get_profile_property(profile_type, profile, name):
-        df = pd.read_csv(f"steel-profiles-{profile_type}.csv", header=[2], skiprows=[3, 4, 5])
+        file_path = Path(__file__).parent / 'profiles' / f"steel-profiles-{profile_type}.csv"
+        df = pd.read_csv(file_path, header=[2], skiprows=[3, 4, 5])
         return df.loc[df['Profile'] == profile, name].item()
 
     @staticmethod
     def calculate_allowable_bending_moment(profile_type, profile, steel_class):
-        df = pd.read_csv(f"steel-profiles-{profile_type}.csv", header=[2], skiprows=[3, 4, 5])
+        file_path = Path(__file__).parent / 'profiles' / f"steel-profiles-{profile_type}.csv"
+        df = pd.read_csv(file_path, header=[2], skiprows=[3, 4, 5])
         moment_of_inertia = df.loc[df['Profile'] == profile, 'Second moment of area'].item()
         profile_height = df.loc[df['Profile'] == profile, 'Depth'].item()
 

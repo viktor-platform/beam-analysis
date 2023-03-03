@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## v1.0.2 (2023/03/03)
+### Fixed
+- Fix reference of csv files to absolute path
+
 ## v1.0.1 (2023/03/03)
 ### Fixed
 - Add images of README file
