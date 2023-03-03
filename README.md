@@ -8,15 +8,15 @@ This app can be used to perform 2D structural beam calculations. With this app y
 
 The app can be used for calculating simple beam structures:
 
-![](resources/image1.png)
+![image1](./resources/image1.png)
 
 But also more complex truss structures:
 
-![](resources/image2.png)
+![image2](./resources/image2.png)
 
 Of which the bending moments and required steel profile can be determined quickly:
 
-![](resources/image3.png)
+![image3](./resources/image3.png)
 
 The calculation core of the app is **anaStruct** ([docs](https://anastruct.readthedocs.io/en/latest/), 
 [github](https://github.com/ritchie46/anaStruct)), a wonderful Python package created by [Ritchie Vink](https://www.ritchievink.com/).
