@@ -1,2 +1,2 @@
-viktor==13.7.0
+viktor== 14.0.0
 anastruct
