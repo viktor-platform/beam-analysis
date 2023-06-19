@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/SDK-v14.0.0-blue) <Please check version is the same as specified in requirements.txt>
+
 # Beam analysis app
 This app can be used to perform 2D structural beam calculations. With this app you can:
 1. Parametrically define the geometry, from a simple beam to a complex truss structure
