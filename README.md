@@ -1,6 +1,4 @@
-![](https://img.shields.io/badge/SDK-v14.0.0-blue) <Please check version is the same as specified in requirements.txt>
-
-# Beam analysis app
+# Beam analysis
 This app can be used to perform 2D structural beam calculations. With this app you can:
 1. Parametrically define the geometry, from a simple beam to a complex truss structure
 2. Apply supports, point loads and distributed loads
@@ -23,7 +21,7 @@ Of which the bending moments and required steel profile can be determined quickl
 The calculation core of the app is **anaStruct** ([docs](https://anastruct.readthedocs.io/en/latest/), 
 [github](https://github.com/ritchie46/anaStruct)), a wonderful Python package created by [Ritchie Vink](https://www.ritchievink.com/).
 
-A published version of this app is available on [demo.viktor.ai](https://demo.viktor.ai/workspaces/80/app/). 
+A published version of this app is available on [demo.viktor.ai](https://demo.viktor.ai/public/beam-structural-analysis).
 
 Ideas on improvements can be posted [here](https://github.com/viktor-platform/beam-analysis-app/discussions/categories/ideas).
 

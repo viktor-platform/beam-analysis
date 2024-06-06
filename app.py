@@ -1,4 +1,4 @@
-"""Copyright (c) 2023 VIKTOR B.V.
+"""Copyright (c) 2024 VIKTOR B.V.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -20,7 +20,6 @@ from pathlib import Path
 from anastruct import SystemElements
 import pandas as pd
 from matplotlib.figure import Figure
-from munch import Munch
 
 from viktor import ViktorController, UserError
 from viktor.parametrization import (
@@ -43,27 +42,21 @@ from viktor.views import (
     DataItem,
     ImageAndDataResult,
     DataStatus,
-    WebView,
-    WebResult,
 )
 from viktor.parametrization import NumberField
 
 
-def get_profile_types(params: Munch, **kwargs):
-    file_path = (
-        Path(__file__).parent
-        / "profiles"
-        / f"steel-profiles-{params.input.profile_type}.csv"
-    )
+def get_profile_types(params, **kwargs):
+    file_path = Path(__file__).parent / "profiles" / f"steel-profiles-{params.input.profile_type}.csv"
     df = pd.read_csv(file_path, header=[2], skiprows=[3, 4, 5])
     return df["Profile"].values.tolist()
 
 
-def get_node_id_options(params: Munch, **kwargs):
+def get_node_id_options(params, **kwargs):
     return [str(i) for i in range(1, len(params.input.nodes) + 1)]
 
 
-def get_element_id_options(params: Munch, **kwargs):
+def get_element_id_options(params, **kwargs):
     return [str(i) for i in range(1, len(params.input.nodes))]
 
 
@@ -81,9 +74,6 @@ This app can be used to perform 2D structural beam calculations. With this app y
 
 The calculation core of the app is **anaStruct** ([docs](https://anastruct.readthedocs.io/en/latest/), 
 [github](https://github.com/ritchie46/anaStruct)), a wonderful Python package created by [Ritchie Vink](https://www.ritchievink.com/).
-
-The code behind this app is open-source available on [github](https://github.com/viktor-platform/beam-analysis-app). 
-Ideas on improvements can be posted [here](https://github.com/viktor-platform/beam-analysis-app/discussions/categories/ideas).
 
 Feel free to calculate your structure by changing the **Input** on the next tab! 
 
@@ -112,19 +102,13 @@ correct results are not guaranteed.*
     input.supports.node_id = OptionField("Node ID", options=get_node_id_options)
     input.supports.type = OptionField("Type", options=["Fixed", "Hinged", "Roll"])
 
-    input.point_loads = Table(
-        "Point loads", default=[{"node_id": "2", "fx": 0, "fy": -15}]
-    )
+    input.point_loads = Table("Point loads", default=[{"node_id": "2", "fx": 0, "fy": -15}])
     input.point_loads.node_id = OptionField("Node ID", options=get_node_id_options)
     input.point_loads.fx = NumberField("Fx", suffix="kN")
     input.point_loads.fy = NumberField("Fy", suffix="kN")
 
-    input.distributed_loads = Table(
-        "Distributed loads", default=[{"element_id": "3", "q": -5}]
-    )
-    input.distributed_loads.element_id = OptionField(
-        "Element ID", options=get_element_id_options
-    )
+    input.distributed_loads = Table("Distributed loads", default=[{"element_id": "3", "q": -5}])
+    input.distributed_loads.element_id = OptionField("Element ID", options=get_element_id_options)
     input.distributed_loads.q = NumberField("q", suffix="kN/m")
 
     input.profile_type = OptionField(
@@ -141,14 +125,12 @@ correct results are not guaranteed.*
         default="IPE240",
         description="The source of profile properties can be found [here](https://eurocodeapplied.com/design/en1993/ipe-hea-heb-hem-design-properties)",
     )
-    input.steel_class = OptionField(
-        "Steel class", options=["S235", "S275", "S355"], default="S235"
-    )
+    input.steel_class = OptionField("Steel class", options=["S235", "S275", "S355"], default="S235")
     input.include_weight = BooleanField("Include weight")
     input.nl2 = LineBreak()
     input.optimize = OptimizationButton(
         "Optimize profile",
-        "optimize_profile",
+        method="optimize_profile",
         longpoll=True,
         flex=35,
         description="The optimization is based on the allowable bending moment (normal forces are not taken into account)",
@@ -156,36 +138,32 @@ correct results are not guaranteed.*
 
 
 class Controller(ViktorController):
-    viktor_enforce_field_constraints = (
-        True  # Resolves upgrade instruction https://docs.viktor.ai/sdk/upgrades#U83
-    )
-
     label = "Beam Calculator"
     parametrization = Parametrization(width=30)
 
     @ImageView("Structure", duration_guess=1)
-    def create_structure(self, params: Munch, **kwargs):
+    def create_structure(self, params, **kwargs):
         """Initiates the process of rendering the structure visualization."""
         ss = self.create_model(params, solve_model=False)
         fig = ss.show_structure(show=False)
         return ImageResult(self.fig_to_svg(fig))
 
     @ImageView("Reaction forces", duration_guess=1)
-    def show_reaction_forces(self, params: Munch, **kwargs):
+    def show_reaction_forces(self, params, **kwargs):
         """Initiates the process of rendering an image of the reaction forces of the structure."""
         ss = self.create_model(params)
         fig = ss.show_reaction_force(show=False)
         return ImageResult(self.fig_to_svg(fig))
 
     @ImageView("Shear forces", duration_guess=1)
-    def show_shear_forces(self, params: Munch, **kwargs):
+    def show_shear_forces(self, params, **kwargs):
         """Initiates the process of rendering an image of the shear forces of the structure."""
         ss = self.create_model(params)
         fig = ss.show_shear_force(show=False)
         return ImageResult(self.fig_to_svg(fig))
 
     @ImageAndDataView("Bending moments", duration_guess=1)
-    def show_bending_moments(self, params: Munch, **kwargs):
+    def show_bending_moments(self, params, **kwargs):
         """Initiates the process of rendering an image of the bending moments of the structure,
         as well as a view of a few key values related to the bending moments."""
         ss = self.create_model(params)
@@ -236,13 +214,13 @@ class Controller(ViktorController):
         return ImageAndDataResult(self.fig_to_svg(fig), data)
 
     @ImageView("Displacements", duration_guess=1)
-    def show_displacements(self, params: Munch, **kwargs):
+    def show_displacements(self, params, **kwargs):
         """Initiates the process of rendering an image of the displacement of the structure."""
         ss = self.create_model(params)
         fig = ss.show_displacement(show=False)
         return ImageResult(self.fig_to_svg(fig))
 
-    def optimize_profile(self, params: Munch, **kwargs):
+    def optimize_profile(self, params, **kwargs):
         """Initiates the process of optimizing structure based on the bending moment unity check.
 
         The optimization considers the different profiles available.
@@ -269,14 +247,12 @@ class Controller(ViktorController):
                 )
 
         output_headers = {"uc": "UC"}
-        return OptimizationResult(
-            results, ["input.profile"], output_headers=output_headers
-        )
+        return OptimizationResult(results, ["input.profile"], output_headers=output_headers)
 
-    def create_model(self, params: Munch, solve_model=True):
+    def create_model(self, params, solve_model=True):
         """Creates and returns an anastruct `SystemElements` model based on the app's given parameters.
 
-        :param params: Munch object of the app's parametrization.
+        :param params: The app's parametrization.
         :param solve_model: Boolean input to indicate whether or not to solve the initialized model.
         :return: `anastruct.SystemElements` object.
         """
@@ -330,9 +306,9 @@ class Controller(ViktorController):
         if solve_model:
             try:
                 ss.solve()
-            except:
+            except Exception:
                 raise UserError(
-                    "Calculation cannot be solved, probably because the structure is instable. Check the supports."
+                    "Calculation cannot be solved, probably because the structure is unstable. Check the supports."
                 )
 
         return ss
@@ -345,25 +321,19 @@ class Controller(ViktorController):
         return svg_data
 
     @staticmethod
-    def get_profile_property(
-        profile_type: str, profile: str, property_name: str
-    ) -> float:
+    def get_profile_property(profile_type: str, profile: str, property_name: str) -> float:
         """Retrieve the profile properties based on the profile type, profile and property
 
         :param profile_type: One of the following profile types: HEA, HEB or IPE.
         :param profile: Profile name, e.g. IPE80 (IPE was given as profile_type)
         :param property_name: The name of the property, e.g. Weight
         """
-        file_path = (
-            Path(__file__).parent / "profiles" / f"steel-profiles-{profile_type}.csv"
-        )
+        file_path = Path(__file__).parent / "profiles" / f"steel-profiles-{profile_type}.csv"
         df = pd.read_csv(file_path, header=[2], skiprows=[3, 4, 5])
         return df.loc[df["Profile"] == profile, property_name].item()
 
     @staticmethod
-    def calculate_allowable_bending_moment(
-        profile_type: str, profile: str, steel_class: str
-    ):
+    def calculate_allowable_bending_moment(profile_type: str, profile: str, steel_class: str):
         """Calculates the allowable bending moment based on the given parameters.
 
         :param profile_type: One of the following profile types: HEA, HEB or IPE.
@@ -371,32 +341,17 @@ class Controller(ViktorController):
         :param steel_class: The steel class, e.g. S235
         :return: A dict with the moment of inertia, profile height, yield strength and allowable bending moment.
         """
-        file_path = (
-            Path(__file__).parent / "profiles" / f"steel-profiles-{profile_type}.csv"
-        )
+        file_path = Path(__file__).parent / "profiles" / f"steel-profiles-{profile_type}.csv"
         df = pd.read_csv(file_path, header=[2], skiprows=[3, 4, 5])
-        moment_of_inertia = df.loc[
-            df["Profile"] == profile, "Second moment of area"
-        ].item()
+        moment_of_inertia = df.loc[df["Profile"] == profile, "Second moment of area"].item()
         profile_height = df.loc[df["Profile"] == profile, "Depth"].item()
 
-        yield_strength = float(
-            steel_class[-3:]
-        )  # Yield strength is based on the steel class, i.e. the yields strength of S235 is 235MPa
-        allowable_bending_moment = (yield_strength * moment_of_inertia) / (
-            profile_height / 2
-        )
+        # Yield strength is based on the steel class, i.e. the yields strength of S235 is 235MPa
+        yield_strength = float(steel_class[-3:])
+        allowable_bending_moment = (yield_strength * moment_of_inertia) / (profile_height / 2)
         return {
             "moment_of_inertia": moment_of_inertia,
             "profile_height": profile_height,
             "yield_strength": yield_strength,
             "allowable_bending_moment": allowable_bending_moment,
         }
-
-    @WebView("What's next?", duration_guess=1)
-    def whats_next(self, params, **kwargs):
-        """Initiates the process of rendering the "What's next" tab."""
-        html_path = Path(__file__).parent / "next_step.html"
-        with html_path.open(encoding="utf-8") as _file:
-            html_string = _file.read()
-        return WebResult(html=html_string)
