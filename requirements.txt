@@ -1,2 +1,2 @@
-viktor==14.0.0
-anastruct==1.4.1
+viktor==14.10.0
+anastruct==1.5.1
