@@ -32,6 +32,7 @@ from viktor.parametrization import (
     LineBreak,
     OptimizationButton,
     BooleanField,
+    NumberField,
 )
 from viktor.result import OptimizationResultElement, OptimizationResult
 from viktor.views import (
@@ -43,7 +44,6 @@ from viktor.views import (
     ImageAndDataResult,
     DataStatus,
 )
-from viktor.parametrization import NumberField
 
 
 def get_profile_types(params, **kwargs):
