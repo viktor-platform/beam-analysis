@@ -8,15 +8,15 @@ This app can be used to perform 2D structural beam calculations. With this app y
 
 The app can be used for calculating simple beam structures:
 
-![image1](./resources/image1.png)
+![image1](.viktor-template/image1.png)
 
 But also more complex truss structures:
 
-![image2](./resources/image2.png)
+![image2](.viktor-template/image2.png)
 
 Of which the bending moments and required steel profile can be determined quickly:
 
-![image3](./resources/image3.png)
+![image](.viktor-template/image.png)
 
 The calculation core of the app is **anaStruct** ([docs](https://anastruct.readthedocs.io/en/latest/), 
 [github](https://github.com/ritchie46/anaStruct)), a wonderful Python package created by [Ritchie Vink](https://www.ritchievink.com/).
@@ -27,6 +27,3 @@ Ideas on improvements can be posted [here](https://github.com/viktor-platform/be
 
 *Note that this is not a validated software package. The app can only be used for indicative calculations, 
 correct results are not guaranteed.*
-
-## App structure
-This is an editor-only app type.
