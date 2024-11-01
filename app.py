@@ -21,29 +21,7 @@ from anastruct import SystemElements
 import pandas as pd
 from matplotlib.figure import Figure
 
-from viktor import ViktorController, UserError
-from viktor.parametrization import (
-    ViktorParametrization,
-    OptionField,
-    Table,
-    Text,
-    Tab,
-    AutocompleteField,
-    LineBreak,
-    OptimizationButton,
-    BooleanField,
-    NumberField,
-)
-from viktor.result import OptimizationResultElement, OptimizationResult
-from viktor.views import (
-    ImageView,
-    ImageResult,
-    ImageAndDataView,
-    DataGroup,
-    DataItem,
-    ImageAndDataResult,
-    DataStatus,
-)
+import viktor as vkt
 
 
 def get_profile_types(params, **kwargs):
@@ -60,9 +38,9 @@ def get_element_id_options(params, **kwargs):
     return [str(i) for i in range(1, len(params.input.nodes))]
 
 
-class Parametrization(ViktorParametrization):
-    info = Tab("Info")
-    info.text_01 = Text(
+class Parametrization(vkt.ViktorParametrization):
+    info = vkt.Tab("Info")
+    info.text_01 = vkt.Text(
         """## Welcome to the beam analysis app!
 
 This app can be used to perform 2D structural beam calculations. With this app you can:
@@ -82,8 +60,8 @@ correct results are not guaranteed.*
 """
     )
 
-    input = Tab("Input")
-    input.nodes = Table(
+    input = vkt.Tab("Input")
+    input.nodes = vkt.Table(
         "Nodes",
         default=[
             {"x": 0, "y": 0},
@@ -92,43 +70,43 @@ correct results are not guaranteed.*
             {"x": 13, "y": 0},
         ],
     )
-    input.nodes.x = NumberField("X", suffix="m")
-    input.nodes.y = NumberField("Y", suffix="m")
+    input.nodes.x = vkt.NumberField("X", suffix="m")
+    input.nodes.y = vkt.NumberField("Y", suffix="m")
 
-    input.supports = Table(
+    input.supports = vkt.Table(
         "Supports",
         default=[{"node_id": "1", "type": "Hinged"}, {"node_id": "3", "type": "Roll"}],
     )
-    input.supports.node_id = OptionField("Node ID", options=get_node_id_options)
-    input.supports.type = OptionField("Type", options=["Fixed", "Hinged", "Roll"])
+    input.supports.node_id = vkt.OptionField("Node ID", options=get_node_id_options)
+    input.supports.type = vkt.OptionField("Type", options=["Fixed", "Hinged", "Roll"])
 
-    input.point_loads = Table("Point loads", default=[{"node_id": "2", "fx": 0, "fy": -15}])
-    input.point_loads.node_id = OptionField("Node ID", options=get_node_id_options)
-    input.point_loads.fx = NumberField("Fx", suffix="kN")
-    input.point_loads.fy = NumberField("Fy", suffix="kN")
+    input.point_loads = vkt.Table("Point loads", default=[{"node_id": "2", "fx": 0, "fy": -15}])
+    input.point_loads.node_id = vkt.OptionField("Node ID", options=get_node_id_options)
+    input.point_loads.fx = vkt.NumberField("Fx", suffix="kN")
+    input.point_loads.fy = vkt.NumberField("Fy", suffix="kN")
 
-    input.distributed_loads = Table("Distributed loads", default=[{"element_id": "3", "q": -5}])
-    input.distributed_loads.element_id = OptionField("Element ID", options=get_element_id_options)
-    input.distributed_loads.q = NumberField("q", suffix="kN/m")
+    input.distributed_loads = vkt.Table("Distributed loads", default=[{"element_id": "3", "q": -5}])
+    input.distributed_loads.element_id = vkt.OptionField("Element ID", options=get_element_id_options)
+    input.distributed_loads.q = vkt.NumberField("q", suffix="kN/m")
 
-    input.profile_type = OptionField(
+    input.profile_type = vkt.OptionField(
         "Profile type",
         options=["IPE", "HEA", "HEB"],
         default="IPE",
         variant="radio-inline",
         flex=80,
     )
-    input.nl1 = LineBreak()
-    input.profile = AutocompleteField(
+    input.nl1 = vkt.LineBreak()
+    input.profile = vkt.AutocompleteField(
         "Profile",
         options=get_profile_types,
         default="IPE240",
         description="The source of profile properties can be found [here](https://eurocodeapplied.com/design/en1993/ipe-hea-heb-hem-design-properties)",
     )
-    input.steel_class = OptionField("Steel class", options=["S235", "S275", "S355"], default="S235")
-    input.include_weight = BooleanField("Include weight")
-    input.nl2 = LineBreak()
-    input.optimize = OptimizationButton(
+    input.steel_class = vkt.OptionField("Steel class", options=["S235", "S275", "S355"], default="S235")
+    input.include_weight = vkt.BooleanField("Include weight")
+    input.nl2 = vkt.LineBreak()
+    input.optimize = vkt.OptimizationButton(
         "Optimize profile",
         method="optimize_profile",
         longpoll=True,
@@ -137,32 +115,32 @@ correct results are not guaranteed.*
     )
 
 
-class Controller(ViktorController):
+class Controller(vkt.ViktorController):
     label = "Beam Calculator"
     parametrization = Parametrization(width=30)
 
-    @ImageView("Structure", duration_guess=1)
+    @vkt.ImageView("Structure", duration_guess=1)
     def create_structure(self, params, **kwargs):
         """Initiates the process of rendering the structure visualization."""
         ss = self.create_model(params, solve_model=False)
         fig = ss.show_structure(show=False)
-        return ImageResult(self.fig_to_svg(fig))
+        return vkt.ImageResult(self.fig_to_svg(fig))
 
-    @ImageView("Reaction forces", duration_guess=1)
+    @vkt.ImageView("Reaction forces", duration_guess=1)
     def show_reaction_forces(self, params, **kwargs):
         """Initiates the process of rendering an image of the reaction forces of the structure."""
         ss = self.create_model(params)
         fig = ss.show_reaction_force(show=False)
-        return ImageResult(self.fig_to_svg(fig))
+        return vkt.ImageResult(self.fig_to_svg(fig))
 
-    @ImageView("Shear forces", duration_guess=1)
+    @vkt.ImageView("Shear forces", duration_guess=1)
     def show_shear_forces(self, params, **kwargs):
         """Initiates the process of rendering an image of the shear forces of the structure."""
         ss = self.create_model(params)
         fig = ss.show_shear_force(show=False)
-        return ImageResult(self.fig_to_svg(fig))
+        return vkt.ImageResult(self.fig_to_svg(fig))
 
-    @ImageAndDataView("Bending moments", duration_guess=1)
+    @vkt.ImageAndDataView("Bending moments", duration_guess=1)
     def show_bending_moments(self, params, **kwargs):
         """Initiates the process of rendering an image of the bending moments of the structure,
         as well as a view of a few key values related to the bending moments."""
@@ -176,49 +154,49 @@ class Controller(ViktorController):
         uc = abs(max_moment / results["allowable_bending_moment"])
 
         if uc < 1:
-            status = DataStatus.SUCCESS
+            status = vkt.DataStatus.SUCCESS
             status_msg = ""
         else:
-            status = DataStatus.ERROR
+            status = vkt.DataStatus.ERROR
             status_msg = "UC should not exceed 1.0"
 
-        data = DataGroup(
-            DataItem(
+        data = vkt.DataGroup(
+            vkt.DataItem(
                 "Maximum bending moment", max_moment, suffix="kNm", number_of_decimals=0
             ),
-            DataItem(
+            vkt.DataItem(
                 "Allowable bending moment",
                 results["allowable_bending_moment"],
                 suffix="kNm",
                 number_of_decimals=0,
-                subgroup=DataGroup(
-                    DataItem(
+                subgroup=vkt.DataGroup(
+                    vkt.DataItem(
                         "Yield strength",
                         results["yield_strength"],
                         suffix="MPa",
                         number_of_decimals=0,
                     ),
-                    DataItem(
+                    vkt.DataItem(
                         "Second moment of area (Iy)",
                         results["moment_of_inertia"],
                         suffix="x 10^6 mm4",
                     ),
-                    DataItem("Profile height", results["profile_height"], suffix="mm"),
+                    vkt.DataItem("Profile height", results["profile_height"], suffix="mm"),
                 ),
             ),
-            DataItem(
+            vkt.DataItem(
                 "UC", uc, number_of_decimals=2, status=status, status_message=status_msg
             ),
         )
 
-        return ImageAndDataResult(self.fig_to_svg(fig), data)
+        return vkt.ImageAndDataResult(self.fig_to_svg(fig), data)
 
-    @ImageView("Displacements", duration_guess=1)
+    @vkt.ImageView("Displacements", duration_guess=1)
     def show_displacements(self, params, **kwargs):
         """Initiates the process of rendering an image of the displacement of the structure."""
         ss = self.create_model(params)
         fig = ss.show_displacement(show=False)
-        return ImageResult(self.fig_to_svg(fig))
+        return vkt.ImageResult(self.fig_to_svg(fig))
 
     def optimize_profile(self, params, **kwargs):
         """Initiates the process of optimizing structure based on the bending moment unity check.
@@ -241,13 +219,13 @@ class Controller(ViktorController):
 
             if uc < 1:
                 results.append(
-                    OptimizationResultElement(
+                    vkt.OptimizationResultElement(
                         {"input": {"profile": profile}}, {"uc": round(uc, 2)}
                     )
                 )
 
         output_headers = {"uc": "UC"}
-        return OptimizationResult(results, ["input.profile"], output_headers=output_headers)
+        return vkt.OptimizationResult(results, ["input.profile"], output_headers=output_headers)
 
     def create_model(self, params, solve_model=True):
         """Creates and returns an anastruct `SystemElements` model based on the app's given parameters.
@@ -307,7 +285,7 @@ class Controller(ViktorController):
             try:
                 ss.solve()
             except Exception:
-                raise UserError(
+                raise vkt.UserError(
                     "Calculation cannot be solved, probably because the structure is unstable. Check the supports."
                 )
 
