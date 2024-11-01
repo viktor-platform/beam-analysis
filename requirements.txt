@@ -1,2 +1,2 @@
-viktor==14.13.0
+viktor>=14, <15
 anastruct==1.6.0
